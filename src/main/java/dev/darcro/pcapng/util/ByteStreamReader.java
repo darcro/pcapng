@@ -45,8 +45,15 @@ public class ByteStreamReader {
     public int readInt(int numBytes) {
         if (available() < numBytes) throw new IllegalArgumentException("Not enough data available in stream");
         int val = 0;
-        for (int i = 0; i < numBytes; i++) {
-            val = (val << 8) | (buffer[position++] & 0x00FF);
+        if(bigEndian) {
+            for (int i = 0; i < numBytes; i++) {
+                val = (val << 8) | (buffer[position++] & 0x00FF);
+            }
+        } else {
+            for (int i = numBytes-1; i >= 0; i--) {
+                val = (val << 8) | (buffer[position+i] & 0x00FF);
+            }
+            position += numBytes;
         }
         return val;
     }
@@ -60,8 +67,15 @@ public class ByteStreamReader {
     public long readLong(int numBytes) {
         if (available() < numBytes) throw new IllegalArgumentException("Not enough data available in stream");
         long val = 0;
-        for (int i = 0; i < numBytes; i++) {
-            val = (val << 8) | (buffer[position++] & 0x00FF);
+        if(bigEndian) {
+            for (int i = 0; i < numBytes; i++) {
+                val = (val << 8) | (buffer[position++] & 0x00FF);
+            }
+        } else {
+            for (int i = numBytes-1; i >= 0; i--) {
+                val = (val << 8) | (buffer[position+i] & 0x00FF);
+            }
+            position += numBytes;
         }
         return val;
     }
@@ -107,7 +121,16 @@ public class ByteStreamReader {
     }
 
     public boolean eos() {
-        return position == endIndex;
+        return position > endIndex;
     }
 
+
+
+    private boolean bigEndian = true;
+    public void setBigEndian() {
+        this.bigEndian = true;
+    }
+    public void setLittleEndian() {
+        this.bigEndian = false;
+    }
 }

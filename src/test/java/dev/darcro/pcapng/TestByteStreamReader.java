@@ -69,6 +69,16 @@ public class TestByteStreamReader {
         }
     }
 
+    @Test
+    public void testLittleEndian() {
+        byte[] dat = {0x00, (byte) 0xFF};
+        ByteStreamReader r = new ByteStreamReader(dat);
+        r.mark();
 
+        assertEquals(0x00FF, r.readInt(2));
+        r.reset();
+        r.setLittleEndian();
+        assertEquals(0xFF00, r.readInt(2));
+    }
 
 }

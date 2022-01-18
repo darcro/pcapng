@@ -23,19 +23,20 @@ public class Option {
         byte[] val = reader.readBytes(length);
 
         // check for 32-bit padding
-        int padding = length % 4;
+        final int offset = length % 4;
+        final int padding = offset != 0 ? 4 - offset : 0;
         reader.skipBytes(padding);
 
         return new Option(type, length, val);
     }
 
-    public static Map<Integer,Option> parseOptions(ByteStreamReader reader, int length) {
-        if(length == 0) return Collections.emptyMap();
+    public static Map<Integer, Option> parseOptions(ByteStreamReader reader, int length) {
+        if (length == 0) return Collections.emptyMap();
 
         final HashMap<Integer, Option> options = new HashMap<>();
         final ByteStreamReader optionStream = reader.subStream(length);
 
-        while(!optionStream.eos()) {
+        while (!optionStream.eos()) {
             Option opt = parse(optionStream);
             options.put(opt.type, opt);
         }

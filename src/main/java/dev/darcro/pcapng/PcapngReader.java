@@ -5,6 +5,9 @@ import dev.darcro.pcapng.struct.*;
 import dev.darcro.pcapng.util.ByteStreamReader;
 import dev.darcro.pcapng.util.TimestampConverter;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.HashMap;
 
 public class PcapngReader {
@@ -15,8 +18,17 @@ public class PcapngReader {
     private int interfaceId;
     private HashMap<Integer, InterfaceDescriptionBlock> interfaceDescriptions;
 
-    public PcapngReader(byte[] data) throws PcapngReaderException {
+    public PcapngReader(byte[] data) {
         inputStream = new ByteStreamReader(data);
+    }
+
+    public PcapngReader(String filePath) throws IOException {
+        this(new File(filePath));
+    }
+
+    public PcapngReader(File file) throws IOException {
+        final FileInputStream fis = new FileInputStream(file);
+        inputStream = new ByteStreamReader(fis.readAllBytes());
     }
 
     private PcapngBlock nextBlock() throws PcapngReaderException {
@@ -64,7 +76,7 @@ public class PcapngReader {
         if (idb != null) {
             return new PcapngPacket(TimestampConverter.getMillisecond(epb.timeUnits, idb.tsFlag, idb.tsPower), epb.packetData);
         } else {
-            return new PcapngPacket(TimestampConverter.getMillisecond(epb.timeUnits, false, 6), epb.packetData);
+            return new PcapngPacket(TimestampConverter.getMillisecond(epb.timeUnits), epb.packetData);
         }
     }
 

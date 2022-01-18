@@ -14,18 +14,16 @@ public class EnhancedPacketBlock extends AbstractPcapngBlock {
     public final long timeUnits;
     public final long capturedLength;
     public final long originalLength;
-    public final long snapLength;
     public final byte[] packetData;
 
     public EnhancedPacketBlock(long blockLength, long interfaceId, long timeUnits,
-                               long capturedLength, long originalLength, long snapLength,
+                               long capturedLength, long originalLength,
                                byte[] packetData, Map<Integer, Option> options) {
         super(blockLength, options);
         this.interfaceId = interfaceId;
         this.timeUnits = timeUnits;
         this.capturedLength = capturedLength;
         this.originalLength = originalLength;
-        this.snapLength = snapLength;
         this.packetData = packetData;
     }
 
@@ -42,19 +40,17 @@ public class EnhancedPacketBlock extends AbstractPcapngBlock {
         final long capturedLength = in.readLong(4);
         final long originalLength = in.readLong(4);
 
-        in.skipBytes(2);
-        final long snapLength = in.readLong(4);
-
         final byte[] packetData = in.readBytes((int) capturedLength);
 
-        final int padding = (int) (capturedLength % 4);
+        final int offset = (int) (capturedLength % 4);
+        final int padding = offset != 0 ? 4 - offset : 0;
         in.skipBytes(padding);
 
-        final Map<Integer,Option> options = Option.parseOptions(in, (int) (blockLength - (32 + capturedLength + padding)));
+        final Map<Integer, Option> options = Option.parseOptions(in, (int) (blockLength - (32 + capturedLength + padding)));
 
         in.skipBytes(4); //block length trailer
 
-        return new EnhancedPacketBlock(blockLength, interfaceId, timeUnits, capturedLength, originalLength, snapLength, packetData, options);
+        return new EnhancedPacketBlock(blockLength, interfaceId, timeUnits, capturedLength, originalLength, packetData, options);
     }
 
     @Override

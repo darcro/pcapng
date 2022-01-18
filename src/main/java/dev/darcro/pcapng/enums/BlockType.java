@@ -23,6 +23,6 @@ public enum BlockType {
                     .collect(Collectors.toMap(v -> v.id, v -> v));
 
     public static BlockType fromId(int id) {
-        return lookupMap.get(id);
+        return lookupMap.getOrDefault(id, UNKNOWN_OR_UNSUPPORTED);
     }
 }

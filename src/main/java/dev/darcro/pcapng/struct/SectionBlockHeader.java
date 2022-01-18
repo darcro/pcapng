@@ -39,12 +39,21 @@ public class SectionBlockHeader extends AbstractPcapngBlock {
             throw new PcapngReaderException("Data does not begin with a valid Section Block Header");
         }
 
-        final long blockLength = in.readLong(4);
+        in.mark();
+        in.skipBytes(4); // only read block length after we have figured out the endianness
 
         final int magic = in.readInt(4);
-        if (magic != 0x1A2B3C4D) {
-            throw new PcapngReaderException("Endianness of this data is not supported");
+        if (magic == 0x1A2B3C4D) {
+            in.setBigEndian();
+        } else if (magic == 0x4D3C2B1A) {
+            in.setLittleEndian();
+        } else {
+            throw new PcapngReaderException("Invalid magic number");
         }
+
+        in.reset();
+        final long blockLength = in.readLong(4);
+        in.skipBytes(4);
 
         final int major = in.readInt(2);
         final int minor = in.readInt(2);
